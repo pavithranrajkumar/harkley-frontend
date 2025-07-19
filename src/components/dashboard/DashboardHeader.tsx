@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut, Loader2 } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -9,7 +9,7 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentSection = 'Dashboard' }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoggingOut } = useAuth();
 
   return (
     <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='bg-white border-b border-gray-200 px-6 py-4'>
@@ -40,10 +40,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentSection = 'Das
               <div className='p-2'>
                 <button
                   onClick={logout}
-                  className='w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer'
+                  disabled={isLoggingOut}
+                  className={`w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    isLoggingOut ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
+                  }`}
                 >
-                  <LogOut size={16} />
-                  <span>Sign out</span>
+                  {isLoggingOut ? <Loader2 size={16} className='animate-spin' /> : <LogOut size={16} />}
+                  <span>{isLoggingOut ? 'Signing out...' : 'Sign out'}</span>
                 </button>
               </div>
             </div>
