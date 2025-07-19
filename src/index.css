@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+body {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Preserve Font Awesome icons */
+.fa,
+.fas,
+.far,
+.fal,
+.fab {
+  font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
+}
