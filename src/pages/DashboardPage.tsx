@@ -1,18 +1,42 @@
 import { motion } from 'framer-motion';
-import { Mic, ArrowRight } from 'lucide-react';
+import { Mic, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import Sidebar from '../components/layout/Sidebar';
 import MeetingCard from '../components/dashboard/MeetingCard';
 import ActionItemCard from '../components/dashboard/ActionItemCard';
+import RecordingInstructionsModal from '../components/modals/RecordingInstructionsModal';
 import { MOCK_RECENT_MEETINGS, MOCK_ACTION_ITEMS } from '../constants/dashboard';
 import { useActionItems } from '../hooks/useActionItems';
+import { useHarkleyExtension } from '../hooks/useHarkleyExtension';
+import { useState } from 'react';
 
 const DashboardPage = () => {
   const { actionItems, completedItems, undoItems, countdownTimers, handleActionItemToggle, handleUndo } = useActionItems(MOCK_ACTION_ITEMS);
+  const { status: extensionStatus, startRecording, stopRecording } = useHarkleyExtension();
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
 
-  const handleStartRecording = () => {
-    console.log('Starting recording...');
+  const handleStartRecording = async () => {
+    try {
+      if (extensionStatus.isRecording) {
+        await stopRecording();
+      } else {
+        // Show instructions modal before starting recording
+        setShowInstructionsModal(true);
+      }
+    } catch (error) {
+      console.error('Recording error:', error);
+      // Error is already handled in the hook and displayed in status
+    }
+  };
+
+  const handleStartRecordingFromModal = async () => {
+    try {
+      await startRecording();
+    } catch (error) {
+      console.error('Recording error:', error);
+      // Error is already handled in the hook and displayed in status
+    }
   };
 
   const handleMeetingClick = (meetingId: string) => {
@@ -33,16 +57,29 @@ const DashboardPage = () => {
                 <h1 className='text-3xl font-bold mb-2'>Ready to start a new meeting?</h1>
                 <p className='text-blue-100 text-lg'>Harkley AI will record, transcribe, and extract action items automatically.</p>
               </div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  onClick={handleStartRecording}
-                  variant='secondary'
-                  className='bg-white text-blue-600 hover:bg-gray-50 px-8 py-4 rounded-lg shadow-lg font-semibold cursor-pointer'
-                  leftIcon={<Mic size={20} />}
-                >
-                  Start Recording
-                </Button>
-              </motion.div>
+
+              {extensionStatus.isInstalled ? (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={handleStartRecording}
+                    variant='secondary'
+                    className={`px-8 py-4 rounded-lg shadow-lg font-semibold cursor-pointer transition-all ${
+                      extensionStatus.isRecording ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white text-blue-600 hover:bg-gray-50'
+                    }`}
+                    leftIcon={<Mic size={20} />}
+                  >
+                    {extensionStatus.isRecording ? 'Stop Recording' : 'Start Recording'}
+                  </Button>
+                </motion.div>
+              ) : (
+                <div className='flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20'>
+                  <AlertCircle className='text-orange-300 flex-shrink-0' size={20} />
+                  <div className='text-left'>
+                    <p className='text-white font-medium text-sm'>Extension Required</p>
+                    <p className='text-blue-100 text-xs'>Install extension to record meetings</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -96,6 +133,13 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Recording Instructions Modal */}
+      <RecordingInstructionsModal
+        isOpen={showInstructionsModal}
+        onClose={() => setShowInstructionsModal(false)}
+        onStartRecording={handleStartRecordingFromModal}
+      />
     </div>
   );
 };

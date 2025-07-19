@@ -1,0 +1,25 @@
+{
+  "name": "harkley-chrome-extension",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Chrome extension for Harkley AI meeting recording",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js && echo 'Extension built! Reload in chrome://extensions/'",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.0.0",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1"
+  },
+  "keywords": [
+    "chrome-extension",
+    "meeting-recording",
+    "screen-capture",
+    "audio-mixing"
+  ],
+  "author": "Harkley AI",
+  "license": "MIT"
+}

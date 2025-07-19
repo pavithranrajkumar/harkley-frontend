@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harkley AI Recorder</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="popup-container">
+      <header class="popup-header">
+        <h1 class="popup-title">Harkley AI Recorder</h1>
+        <div class="recording-indicator" id="recordingIndicator" aria-hidden="true">
+          <div class="pulse-dot"></div>
+        </div>
+      </header>
+
+      <main class="popup-main">
+        <div class="status-section">
+          <p class="status-text" id="statusText">Ready to record</p>
+          <p class="duration-text" id="durationText" aria-hidden="true"></p>
+        </div>
+
+        <div class="action-section">
+          <button id="recordButton" class="record-button record-button--start" aria-label="Start recording" type="button">
+            <svg class="record-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span class="button-text">Start Recording</span>
+          </button>
+        </div>
+
+        <div class="info-section">
+          <p class="info-text">Click to start recording your screen and audio. The recording will be sent to your Harkley AI dashboard.</p>
+        </div>
+      </main>
+
+      <footer class="popup-footer">
+        <button id="openDashboardButton" class="dashboard-button" aria-label="Open Harkley AI dashboard" type="button">Open Dashboard</button>
+      </footer>
+    </div>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
