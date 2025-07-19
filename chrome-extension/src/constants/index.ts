@@ -11,6 +11,23 @@ export const EXTENSION_CONFIG: ExtensionConfig = {
       START_RECORDING: 'startRecording',
       STOP_RECORDING: 'stopRecording',
       RECORDING_COMPLETE: 'recordingComplete',
+
+      // Response actions
+      RECORDING_STARTED: 'recordingStarted',
+      RECORDING_STOPPED: 'recordingStopped',
+      RECORDING_ERROR: 'recordingError',
+      RECORDING_RESUMED: 'recordingResumed',
+
+      // Status and data actions
+      GET_RECORDING_STATUS: 'getRecordingStatus',
+      RECORDING_STATUS_RESPONSE: 'recordingStatusResponse',
+      GET_RECORDING_DATA: 'getRecordingData',
+      RECORDING_DATA_RESPONSE: 'recordingDataResponse',
+      CLEAR_RECORDING_DATA: 'clearRecordingData',
+      CLEAR_RECORDING_DATA_RESPONSE: 'clearRecordingDataResponse',
+
+      // Connection testing
+      TEST_CONNECTION: 'testConnection',
     },
   },
   STORAGE_KEYS: {

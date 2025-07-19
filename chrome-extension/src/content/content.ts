@@ -2,6 +2,7 @@ import { EXTENSION_CONFIG } from '../constants';
 import { RecordingService } from '../services/RecordingService';
 import { CommunicationService } from '../services/CommunicationService';
 import { logError } from '../utils/errorHandling';
+import { handleAsyncOperation, handleBackgroundCommunication } from '../utils/messageHelpers';
 
 export class ContentScript {
   private isInitialized = false;
@@ -46,133 +47,58 @@ export class ContentScript {
    */
   private setupMessageHandlers(): void {
     // Handle start recording request
-    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.START_RECORDING, async () => {
-      try {
-        await this.recordingService.startRecording();
-
-        // Notify React app that recording started successfully
-        this.communicationService.sendToReactApp({
-          action: 'recordingStarted',
-          timestamp: Date.now(),
-        });
-      } catch (error) {
-        logError('ContentScript.startRecording', error);
-
-        // Send error to React app
-        this.communicationService.sendToReactApp({
-          action: 'recordingError',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          errorType: error instanceof Error ? error.name : 'Unknown',
-        });
-      }
-    });
+    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.START_RECORDING, () =>
+      handleAsyncOperation(
+        () => this.recordingService.startRecording(),
+        this.communicationService,
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.RECORDING_STARTED
+      )
+    );
 
     // Handle stop recording request
-    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.STOP_RECORDING, async () => {
-      try {
-        await this.recordingService.stopRecording();
-
-        // Notify React app that recording stopped
-        this.communicationService.sendToReactApp({
-          action: 'recordingStopped',
-          timestamp: Date.now(),
-        });
-      } catch (error) {
-        logError('ContentScript.stopRecording', error);
-
-        // Send error to React app
-        this.communicationService.sendToReactApp({
-          action: 'recordingError',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          errorType: error instanceof Error ? error.name : 'Unknown',
-        });
-      }
-    });
+    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.STOP_RECORDING, () =>
+      handleAsyncOperation(
+        () => this.recordingService.stopRecording(),
+        this.communicationService,
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.RECORDING_STOPPED
+      )
+    );
 
     // Handle get recording status request
-    this.communicationService.registerHandler('getRecordingStatus', async () => {
-      try {
-        const response = await this.communicationService.sendToBackground({
-          source: EXTENSION_CONFIG.MESSAGES.SOURCE.EXTENSION,
-          action: 'getRecordingStatus',
-        });
-
-        // Forward response back to React app
-        this.communicationService.sendToReactApp({
-          action: 'recordingStatusResponse',
-          ...(response as Record<string, unknown>),
-        });
-      } catch (error) {
-        logError('ContentScript.getRecordingStatus', error);
-
-        this.communicationService.sendToReactApp({
-          action: 'recordingStatusResponse',
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    });
+    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.GET_RECORDING_STATUS, () =>
+      handleBackgroundCommunication(
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.GET_RECORDING_STATUS,
+        this.communicationService,
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.RECORDING_STATUS_RESPONSE
+      )
+    );
 
     // Handle get recording data request
-    this.communicationService.registerHandler('getRecordingData', async () => {
-      try {
-        const response = await this.communicationService.sendToBackground({
-          source: EXTENSION_CONFIG.MESSAGES.SOURCE.EXTENSION,
-          action: 'getRecordingData',
-        });
-
-        // Forward response back to React app
-        this.communicationService.sendToReactApp({
-          action: 'recordingDataResponse',
-          ...(response as Record<string, unknown>),
-        });
-      } catch (error) {
-        logError('ContentScript.getRecordingData', error);
-
-        this.communicationService.sendToReactApp({
-          action: 'recordingDataResponse',
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    });
+    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.GET_RECORDING_DATA, () =>
+      handleBackgroundCommunication(
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.GET_RECORDING_DATA,
+        this.communicationService,
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.RECORDING_DATA_RESPONSE
+      )
+    );
 
     // Handle test connection request
-    this.communicationService.registerHandler('testConnection', async () => {
-      try {
-        // Send back a response to confirm extension is installed
-        this.communicationService.sendToReactApp({
-          action: 'extensionInstalled',
-          timestamp: Date.now(),
-        });
-      } catch (error) {
-        logError('ContentScript.testConnection', error);
-      }
-    });
+    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.TEST_CONNECTION, () =>
+      handleAsyncOperation(
+        async () => {}, // No-op operation, just send success response
+        this.communicationService,
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.EXTENSION_INSTALLED
+      )
+    );
 
     // Handle clear recording data request
-    this.communicationService.registerHandler('clearRecordingData', async () => {
-      try {
-        const response = await this.communicationService.sendToBackground({
-          source: EXTENSION_CONFIG.MESSAGES.SOURCE.EXTENSION,
-          action: 'clearRecordingData',
-        });
-
-        // Forward response back to React app
-        this.communicationService.sendToReactApp({
-          action: 'clearRecordingDataResponse',
-          ...(response as Record<string, unknown>),
-        });
-      } catch (error) {
-        logError('ContentScript.clearRecordingData', error);
-
-        this.communicationService.sendToReactApp({
-          action: 'clearRecordingDataResponse',
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    });
+    this.communicationService.registerHandler(EXTENSION_CONFIG.MESSAGES.ACTIONS.CLEAR_RECORDING_DATA, () =>
+      handleBackgroundCommunication(
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.CLEAR_RECORDING_DATA,
+        this.communicationService,
+        EXTENSION_CONFIG.MESSAGES.ACTIONS.CLEAR_RECORDING_DATA_RESPONSE
+      )
+    );
   }
 
   /**
@@ -197,7 +123,7 @@ export class ContentScript {
       if (mediaRecorders.length > 0) {
         console.log('Found active recording after page reload');
         this.communicationService.sendToReactApp({
-          action: 'recordingResumed',
+          action: EXTENSION_CONFIG.MESSAGES.ACTIONS.RECORDING_RESUMED,
           timestamp: Date.now(),
         });
       }

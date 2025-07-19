@@ -11,6 +11,23 @@ export interface ExtensionConfig {
       START_RECORDING: string;
       STOP_RECORDING: string;
       RECORDING_COMPLETE: string;
+
+      // Response actions
+      RECORDING_STARTED: string;
+      RECORDING_STOPPED: string;
+      RECORDING_ERROR: string;
+      RECORDING_RESUMED: string;
+
+      // Status and data actions
+      GET_RECORDING_STATUS: string;
+      RECORDING_STATUS_RESPONSE: string;
+      GET_RECORDING_DATA: string;
+      RECORDING_DATA_RESPONSE: string;
+      CLEAR_RECORDING_DATA: string;
+      CLEAR_RECORDING_DATA_RESPONSE: string;
+
+      // Connection testing
+      TEST_CONNECTION: string;
     };
   };
   STORAGE_KEYS: {

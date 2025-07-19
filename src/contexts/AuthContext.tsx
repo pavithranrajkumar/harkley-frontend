@@ -117,20 +117,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    if (isLoggingOut) return; // Prevent multiple logout attempts
+    if (isLoggingOut) return;
 
     setIsLoggingOut(true);
-    try {
-      await authService.logout();
-      showToast.success('Successfully logged out');
-    } catch (error) {
-      console.error('Logout error:', error);
-      showToast.error('Logout failed');
-    } finally {
-      clearAuthState();
-      setIsLoggingOut(false);
-      navigate('/login');
-    }
+    showToast.success('Successfully logged out');
+
+    clearAuthState();
+    setIsLoggingOut(false);
+    navigate('/login');
   };
 
   const checkAuthStatus = async () => {
