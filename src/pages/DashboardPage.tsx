@@ -1,20 +1,29 @@
 import { motion } from 'framer-motion';
-import { Mic, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mic, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import Sidebar from '../components/layout/Sidebar';
 import MeetingCard from '../components/dashboard/MeetingCard';
 import ActionItemCard from '../components/dashboard/ActionItemCard';
 import RecordingInstructionsModal from '../components/modals/RecordingInstructionsModal';
-import { MOCK_RECENT_MEETINGS, MOCK_ACTION_ITEMS } from '../constants/dashboard';
+import { MOCK_ACTION_ITEMS } from '../constants/dashboard';
 import { useActionItems } from '../hooks/useActionItems';
 import { useHarkleyExtension } from '../hooks/useHarkleyExtension';
-import { useState } from 'react';
+import { useMeetings } from '../hooks/useMeetings';
+import { useState, useEffect } from 'react';
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const { actionItems, completedItems, undoItems, countdownTimers, handleActionItemToggle, handleUndo } = useActionItems(MOCK_ACTION_ITEMS);
   const { status: extensionStatus, startRecording, stopRecording } = useHarkleyExtension();
+  const { meetings, loading: meetingsLoading, error: meetingsError, fetchRecentMeetings } = useMeetings();
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+
+  // Fetch recent meetings on component mount
+  useEffect(() => {
+    fetchRecentMeetings();
+  }, [fetchRecentMeetings]);
 
   const handleStartRecording = async () => {
     try {
@@ -91,17 +100,36 @@ const DashboardPage = () => {
             <div className='xl:col-span-2'>
               <div className='flex items-center justify-between mb-4'>
                 <h2 className='text-xl font-bold text-gray-900'>Recent Meetings</h2>
-                <span className='text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center cursor-pointer'>
+                <span
+                  onClick={() => navigate('/meetings')}
+                  className='text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center cursor-pointer'
+                >
                   View All
                   <ArrowRight className='w-4 h-4 ml-1' />
                 </span>
               </div>
               <div className='bg-white rounded-xl shadow-sm overflow-hidden'>
-                {MOCK_RECENT_MEETINGS.map((meeting, index) => (
-                  <div key={meeting.id} className={index !== MOCK_RECENT_MEETINGS.length - 1 ? 'border-b border-gray-200' : ''}>
-                    <MeetingCard meeting={meeting} index={index} onClick={handleMeetingClick} />
+                {meetingsLoading ? (
+                  <div className='flex items-center justify-center py-8'>
+                    <Loader2 className='w-6 h-6 animate-spin text-blue-600' />
+                    <span className='ml-2 text-gray-600'>Loading meetings...</span>
                   </div>
-                ))}
+                ) : meetingsError ? (
+                  <div className='flex items-center justify-center py-8 text-red-600'>
+                    <AlertCircle className='w-5 h-5 mr-2' />
+                    <span>{meetingsError}</span>
+                  </div>
+                ) : meetings.length === 0 ? (
+                  <div className='flex items-center justify-center py-8 text-gray-500'>
+                    <span>No meetings found</span>
+                  </div>
+                ) : (
+                  <div className='p-4'>
+                    {meetings.map((meeting, index) => (
+                      <MeetingCard key={meeting.id} meeting={meeting} index={index} onClick={handleMeetingClick} />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

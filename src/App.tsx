@@ -4,6 +4,8 @@ import './App.css';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import MeetingsPage from './pages/MeetingsPage';
+import MeetingDetailsPage from './pages/MeetingDetailsPage';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/auth/PrivateRoute';
 import PublicRoute from './components/auth/PublicRoute';
@@ -43,6 +45,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <DashboardPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path='/meetings'
+              element={
+                <PrivateRoute>
+                  <MeetingsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path='/meetings/:meetingId'
+              element={
+                <PrivateRoute>
+                  <MeetingDetailsPage />
                 </PrivateRoute>
               }
             />
