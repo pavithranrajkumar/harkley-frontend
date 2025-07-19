@@ -1,6 +1,5 @@
 import * as yup from 'yup';
 
-// Error messages
 export const ERROR_MESSAGES = {
   EMAIL_REQUIRED: 'Email address is required',
   EMAIL_INVALID: 'Please enter a valid email address',
@@ -11,13 +10,11 @@ export const ERROR_MESSAGES = {
   REQUIRED_FIELD: 'This field is required',
 } as const;
 
-// Login form validation schema
 export const loginSchema = yup.object({
   email: yup.string().required(ERROR_MESSAGES.EMAIL_REQUIRED).email(ERROR_MESSAGES.EMAIL_INVALID).trim(),
   password: yup.string().required(ERROR_MESSAGES.PASSWORD_REQUIRED).min(8, ERROR_MESSAGES.PASSWORD_MIN_LENGTH).trim(),
 });
 
-// Registration form validation schema
 export const registerSchema = yup.object({
   email: yup.string().required(ERROR_MESSAGES.EMAIL_REQUIRED).email(ERROR_MESSAGES.EMAIL_INVALID),
   password: yup
@@ -33,6 +30,5 @@ export const registerSchema = yup.object({
   lastName: yup.string().required(ERROR_MESSAGES.REQUIRED_FIELD),
 });
 
-// TypeScript types for form data
 export type LoginFormData = yup.InferType<typeof loginSchema>;
 export type RegisterFormData = yup.InferType<typeof registerSchema>;

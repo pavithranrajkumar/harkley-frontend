@@ -37,7 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={`
           ${baseClasses}
           ${variantClasses[variant]}
-          ${sizeClasses[size]}
+          ${sizeClasses[size]} 
           ${className}
         `}
         disabled={isDisabled}
