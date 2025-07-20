@@ -31,7 +31,6 @@ export const useMeetings = (): UseMeetingsReturn => {
         page: pageNum,
         limit,
       });
-
       setMeetings(response.meetings);
       setTotal(response.total);
       setPage(response.page);

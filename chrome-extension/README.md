@@ -1,6 +1,6 @@
-# Harkley AI Harkley Extension
+# Harkley AI Chrome Extension
 
-A professional Harkley extension for recording meetings and syncing with the Harkley AI React application.
+A professional Chrome extension for recording meetings and syncing with the Harkley AI React application. This extension provides **tab-level recording** capabilities for capturing meetings from Google Meet, Zoom, Teams, and other meeting platforms.
 
 ## 🏗️ Architecture Overview
 
@@ -60,7 +60,8 @@ harkley-frontend/
 
 ### **Core Functionality**
 
-- ✅ **Screen Recording**: Full screen + system audio capture
+- ✅ **Tab Recording**: Record any tab's audio/video including meeting platforms
+- ✅ **Meeting Platform Support**: Google Meet, Zoom, Teams, Webex, and more
 - ✅ **Real-time Sync**: Perfect synchronization with React app
 - ✅ **Chunked Upload**: 10-second chunks for reliability
 - ✅ **Local Storage**: 100MB temporary storage limit
@@ -74,6 +75,7 @@ harkley-frontend/
 - ✅ **Duration Display**: Real-time recording timer
 - ✅ **Error Recovery**: Graceful error handling and user feedback
 - ✅ **Responsive Design**: Works across different screen sizes
+- ✅ **Smart Integration**: Automatically detects when React app is available
 
 ### **Technical Excellence**
 
@@ -88,7 +90,7 @@ harkley-frontend/
 ### **Prerequisites**
 
 - Node.js 18+
-- Harkley browser
+- Chrome browser (or Chromium-based browsers)
 - React app running on `http://localhost:5173`
 
 ### **Installation**
@@ -100,15 +102,15 @@ harkley-frontend/
    node build.js
    ```
 
-2. **Load in Harkley**
+2. **Load in Chrome**
 
-   - Open Harkley and navigate to `chrome://extensions/`
+   - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" (top right toggle)
    - Click "Load unpacked"
    - Select the `chrome-extension/dist` folder
 
 3. **Verify Installation**
-   - Extension icon should appear in Harkley toolbar
+   - Extension icon should appear in Chrome toolbar
    - Click icon to open popup
    - Should show "Ready to record" status
 
@@ -161,6 +163,41 @@ harkley-frontend/
 - `recording_status`: Boolean recording state
 - `recording_data`: Base64 encoded video data
 - `extension_settings`: Extension configuration
+
+## 🎯 Recording Options
+
+### **Extension vs In-App Recording**
+
+Harkley AI now supports **two recording methods**:
+
+#### **Chrome Extension Recording** (This Extension)
+
+- **Use Case**: Recording meetings from Google Meet, Zoom, Teams, Webex, etc.
+- **Advantages**:
+  - Works with any meeting platform
+  - Captures system audio (not just tab audio)
+  - Background recording (continues when switching tabs)
+  - No camera/microphone permissions needed
+- **Best For**: Professional meetings, conference calls, webinars
+
+#### **In-App Browser Recording**
+
+- **Use Case**: Direct recording within the Harkley AI application
+- **Advantages**:
+  - No extension installation required
+  - Camera and microphone access
+  - Live preview during recording
+  - Audio/video toggle controls
+- **Best For**: Quick recordings, presentations, personal notes
+
+### **Smart Recording Button**
+
+The React app includes a **Smart Recording Button** that:
+
+- Automatically detects if the Chrome extension is installed
+- Shows extension recording option when available
+- Falls back to in-app recording when extension is not available
+- Provides consistent UI regardless of recording method
 
 ## 🎯 Integration with React App
 

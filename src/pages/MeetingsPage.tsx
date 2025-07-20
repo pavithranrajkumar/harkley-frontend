@@ -1,24 +1,43 @@
-import { Video, Search, Filter, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Video, Search, Loader2, AlertCircle, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import Sidebar from '../components/layout/Sidebar';
-import MeetingCard from '../components/dashboard/MeetingCard';
+import MeetingCard from '../components/shared/MeetingCard';
 import { useMeetings } from '../hooks/useMeetings';
+import { meetingService } from '../services/meetingService';
+import { formatDuration } from '../utils/meetingUtils';
 import { useState, useEffect } from 'react';
+import type { MeetingStats } from '../types/meeting';
 
 const MeetingsPage = () => {
+  const navigate = useNavigate();
   const { meetings, loading, error, total, page, totalPages, fetchMeetings } = useMeetings();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [stats, setStats] = useState<MeetingStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  // Fetch meetings on component mount and when page changes
+  // Fetch meetings and stats on component mount
   useEffect(() => {
     fetchMeetings(currentPage, 10);
+    fetchStats();
   }, [fetchMeetings, currentPage]);
 
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true);
+      const statsData = await meetingService.getMeetingStats();
+      setStats(statsData);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   const handleMeetingClick = (meetingId: string) => {
-    console.log('Opening meeting:', meetingId);
-    // TODO: Navigate to individual meeting page
+    navigate(`/meetings/${meetingId}`);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -52,39 +71,36 @@ const MeetingsPage = () => {
                     className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                   />
                 </div>
-                <button className='flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'>
-                  <Filter className='w-4 h-4 mr-2' />
-                  Filter
-                </button>
               </div>
             </div>
 
             {/* Stats Cards */}
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               <div className='bg-blue-50 p-4 rounded-lg'>
                 <div className='flex items-center'>
                   <Video className='w-8 h-8 text-blue-600' />
                   <div className='ml-3'>
                     <p className='text-sm font-medium text-blue-600'>Total Meetings</p>
-                    <p className='text-2xl font-bold text-blue-900'>{total}</p>
+                    <p className='text-2xl font-bold text-blue-900'>{statsLoading ? '...' : stats?.totalMeetings || 0}</p>
                   </div>
                 </div>
               </div>
-              <div className='bg-green-50 p-4 rounded-lg'>
-                <div className='flex items-center'>
-                  <Video className='w-8 h-8 text-green-600' />
-                  <div className='ml-3'>
-                    <p className='text-sm font-medium text-green-600'>With Transcriptions</p>
-                    <p className='text-2xl font-bold text-green-900'>{meetings.filter((m) => m.transcriptions.length > 0).length}</p>
-                  </div>
-                </div>
-              </div>
+
               <div className='bg-purple-50 p-4 rounded-lg'>
                 <div className='flex items-center'>
-                  <Video className='w-8 h-8 text-purple-600' />
+                  <Clock className='w-8 h-8 text-purple-600' />
                   <div className='ml-3'>
-                    <p className='text-sm font-medium text-purple-600'>With Action Items</p>
-                    <p className='text-2xl font-bold text-purple-900'>{meetings.filter((m) => m.actionItems.length > 0).length}</p>
+                    <p className='text-sm font-medium text-purple-600'>Total Duration</p>
+                    <p className='text-2xl font-bold text-purple-900'>{statsLoading ? '...' : formatDuration(stats?.totalDuration || 0)}</p>
+                  </div>
+                </div>
+              </div>
+              <div className='bg-orange-50 p-4 rounded-lg'>
+                <div className='flex items-center'>
+                  <Clock className='w-8 h-8 text-orange-600' />
+                  <div className='ml-3'>
+                    <p className='text-sm font-medium text-orange-600'>Avg Duration</p>
+                    <p className='text-2xl font-bold text-orange-900'>{statsLoading ? '...' : formatDuration(stats?.averageDuration || 0)}</p>
                   </div>
                 </div>
               </div>

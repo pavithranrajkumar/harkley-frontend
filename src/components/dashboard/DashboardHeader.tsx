@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Bell, LogOut, Loader2 } from 'lucide-react';
+import { LogOut, Loader2 } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -12,21 +11,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentSection = 'Das
   const { user, logout, isLoggingOut } = useAuth();
 
   return (
-    <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className='bg-white border-b border-gray-200 px-6 py-4'>
+    <header className='bg-white border-b border-gray-200 px-6 py-4'>
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-4'>
           <h1 className='text-xl font-bold text-gray-900'>{currentSection}</h1>
         </div>
 
         <div className='flex items-center space-x-4'>
-          {/* Notification icon - commented out for now */}
-          <div className='flex items-center space-x-2'>
-            <button className='cursor-pointer p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative'>
-              <Bell size={20} />
-              <span className='absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center'>3</span>
-            </button>
-          </div>
-
           <div className='relative group'>
             <button className='flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer'>
               <Avatar src={user?.avatar} name={user?.name} size='md' />
@@ -53,7 +44,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentSection = 'Das
           </div>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 };
 

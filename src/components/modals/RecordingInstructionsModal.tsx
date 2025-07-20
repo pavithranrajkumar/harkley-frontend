@@ -34,7 +34,7 @@ const RecordingInstructionsModal = ({ isOpen, onClose, onStartRecording }: Recor
             {/* Header */}
             <div className='flex items-center justify-between mb-6'>
               <h2 className='text-xl font-bold text-gray-900'>Recording Instructions</h2>
-              <button onClick={onClose} className='text-gray-400 hover:text-gray-600 transition-colors'>
+              <button onClick={onClose} className='text-gray-400 hover:text-gray-600 transition-colors cursor-pointer'>
                 <X size={20} />
               </button>
             </div>

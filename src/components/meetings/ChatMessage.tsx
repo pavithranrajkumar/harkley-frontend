@@ -1,4 +1,4 @@
-import type { ChatSegment } from '../../types/meeting';
+import type { ChatSegment } from '../../types/transcription';
 
 interface ChatMessageProps {
   segment: ChatSegment;

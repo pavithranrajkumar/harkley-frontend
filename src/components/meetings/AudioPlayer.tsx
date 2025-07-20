@@ -1,14 +1,14 @@
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
 interface AudioPlayerProps {
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
   isMuted: boolean;
   onPlayPause: () => void;
   onTimeUpdate: () => void;
-  onLoadedMetadata: () => void;
+  onLoadedMetadata?: () => void;
   onSeek: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onToggleMute: () => void;
   formatTime: (seconds: number) => string;
@@ -32,7 +32,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   return (
     <div className='border-t border-gray-200 bg-gray-50 p-4'>
       <div className='max-w-4xl mx-auto'>
-        <audio ref={audioRef} src={filePath} onTimeUpdate={onTimeUpdate} onLoadedMetadata={onLoadedMetadata} />
+        <audio
+          ref={audioRef}
+          src={filePath}
+          onTimeUpdate={onTimeUpdate}
+          onLoadedMetadata={onLoadedMetadata || undefined}
+          onEnded={() => {
+            // This will be handled by the parent component
+          }}
+        />
 
         <div className='flex items-center space-x-4'>
           <button onClick={onPlayPause} className='bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition-colors shadow-lg'>

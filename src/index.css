@@ -8,6 +8,9 @@
   cursor: pointer;
 }
 
+button {
+  cursor: pointer;
+}
 /* Chat interface improvements */
 .chat-container {
   scroll-behavior: smooth;

@@ -1,12 +1,12 @@
 import axios, { type AxiosInstance, type AxiosResponse, type AxiosError } from 'axios';
 import type { ApiResponse } from '../types/auth';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 120000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -56,12 +56,27 @@ export const apiRequest = async <T>(
   config?: object
 ): Promise<ApiResponse<T>> => {
   try {
-    const response = await api.request<ApiResponse<T>>({
+    const requestConfig: {
+      method: string;
+      url: string;
+      data?: unknown;
+      headers?: Record<string, string>;
+      [key: string]: unknown;
+    } = {
       method,
       url: endpoint,
       data,
       ...config,
-    });
+    };
+
+    // For FormData, we need to completely override the default headers
+    if (data instanceof FormData) {
+      requestConfig.headers = {
+        'Content-Type': 'multipart/form-data',
+      };
+    }
+
+    const response = await api.request<ApiResponse<T>>(requestConfig);
 
     return response.data;
   } catch (error) {

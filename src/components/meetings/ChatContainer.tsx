@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import ChatMessage from './ChatMessage';
-import type { ChatSegment } from '../../types/meeting';
+import type { ChatSegment } from '../../types/transcription';
 
 interface ChatContainerProps {
   chatSegments: ChatSegment[];
@@ -33,7 +33,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   if (viewMode === 'transcript') {
     return (
       <div className='flex-1 overflow-y-auto p-4 chat-container'>
-        <div className='max-w-4xl mx-auto'>
+        <div className='mx-auto'>
           <div className='bg-gray-50 rounded-lg p-6'>
             <h3 className='font-semibold text-gray-900 mb-4'>Full Transcription</h3>
             <p className='text-gray-700 leading-relaxed whitespace-pre-wrap'>{transcription?.fullText || 'No transcription available'}</p>
@@ -45,7 +45,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   return (
     <div ref={chatContainerRef} className='flex-1 overflow-y-auto p-4 space-y-4 chat-container'>
-      <div className='max-w-4xl mx-auto space-y-4'>
+      <div className=' mx-auto space-y-4'>
         {chatSegments.map((segment, index) => {
           const isActive = activeSegment === segment.id;
           const speakerColor = getSpeakerColor(segment.speakerNumber);

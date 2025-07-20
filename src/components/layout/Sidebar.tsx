@@ -20,7 +20,8 @@ const Sidebar: React.FC = () => {
   // Update active route based on current location
   useEffect(() => {
     const currentPath = location.pathname;
-    const activeRoute = SIDEBAR_ROUTES.find((route) => route.path === currentPath);
+    // Find the route that matches the current path (including nested routes)
+    const activeRoute = SIDEBAR_ROUTES.find((route) => currentPath === route.path || currentPath.startsWith(route.path + '/'));
     if (activeRoute) {
       setRoutes(updateActiveRoute(SIDEBAR_ROUTES, activeRoute.id));
     }

@@ -6,6 +6,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import MeetingsPage from './pages/MeetingsPage';
 import MeetingDetailsPage from './pages/MeetingDetailsPage';
+import ActionItemsPage from './pages/ActionItemsPage';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/auth/PrivateRoute';
 import PublicRoute from './components/auth/PublicRoute';
@@ -61,6 +62,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <MeetingDetailsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path='/action-items'
+              element={
+                <PrivateRoute>
+                  <ActionItemsPage />
                 </PrivateRoute>
               }
             />

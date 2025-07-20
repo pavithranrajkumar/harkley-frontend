@@ -1,79 +1,143 @@
-import { useState, useEffect } from 'react';
-import type { ActionItem } from '../types/meeting';
+import { useState, useCallback, useRef } from 'react';
+import { actionItemService } from '../services/actionItemService';
+import type { ActionItem, CreateActionItemData, UpdateActionItemData } from '../types/actionItem';
 
-export const useActionItems = (initialItems: ActionItem[]) => {
-  const [actionItems, setActionItems] = useState<ActionItem[]>(initialItems);
-  const [completedItems, setCompletedItems] = useState<{ [key: string]: boolean }>({});
-  const [undoItems, setUndoItems] = useState<{ [key: string]: boolean }>({});
-  const [countdownTimers, setCountdownTimers] = useState<{ [key: string]: number }>({});
+interface UseActionItemsParams {
+  meetingId?: string;
+  status?: string;
+  priority?: string;
+  assignee?: string;
+  page?: number;
+  limit?: number;
+}
 
-  const handleActionItemToggle = (itemId: string) => {
-    const isCurrentlyCompleted = completedItems[itemId];
+interface UseActionItemsReturn {
+  actionItems: ActionItem[];
+  loading: boolean;
+  error: string | null;
+  total: number;
+  page: number;
+  totalPages: number;
+  fetchActionItems: (params?: UseActionItemsParams) => Promise<void>;
+  createActionItem: (data: CreateActionItemData) => Promise<ActionItem | null>;
+  updateActionItem: (actionItemId: string, data: UpdateActionItemData) => Promise<ActionItem | null>;
+  refreshActionItems: () => Promise<void>;
+}
 
-    if (!isCurrentlyCompleted) {
-      // Marking as completed - start timer
-      setCompletedItems((prev) => ({ ...prev, [itemId]: true }));
-      setUndoItems((prev) => ({ ...prev, [itemId]: true }));
-      setCountdownTimers((prev) => ({ ...prev, [itemId]: 5 })); // Start with 5 seconds
+// Utility functions
+const sortActionItems = (items: ActionItem[]): ActionItem[] => {
+  return items.sort((a, b) => {
+    const aIsCompleted = a.status === 'completed';
+    const bIsCompleted = b.status === 'completed';
 
-      // Set timer to hide after 5 seconds
-      setTimeout(() => {
-        setCompletedItems((prev) => {
-          if (prev[itemId]) {
-            // Only hide if still completed
-            setActionItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-            setUndoItems((prevUndo) => ({ ...prevUndo, [itemId]: false }));
-            setCountdownTimers((prevTimers) => ({ ...prevTimers, [itemId]: 0 }));
-          }
-          return prev;
-        });
-      }, 5000);
-    } else {
-      // Unchecking - cancel timer and hide undo
-      setCompletedItems((prev) => ({ ...prev, [itemId]: false }));
-      setUndoItems((prev) => ({ ...prev, [itemId]: false }));
-      setCountdownTimers((prev) => ({ ...prev, [itemId]: 0 }));
+    if (aIsCompleted && !bIsCompleted) return 1;
+    if (!aIsCompleted && bIsCompleted) return -1;
+    return 0;
+  });
+};
+
+const handleApiError = (error: unknown, operation: string): string => {
+  const message = error instanceof Error ? error.message : `Failed to ${operation}`;
+  console.error(`Error ${operation}:`, error);
+  return message;
+};
+
+export const useActionItems = (initialParams: UseActionItemsParams = {}): UseActionItemsReturn => {
+  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const currentParamsRef = useRef(initialParams);
+
+  // Generic state updater that maintains sorting
+  const updateActionItemsWithSorting = useCallback((updater: (prev: ActionItem[]) => ActionItem[]) => {
+    setActionItems((prev) => sortActionItems(updater(prev)));
+  }, []);
+
+  // Generic API operation wrapper
+  const withErrorHandling = useCallback(async <T>(operation: () => Promise<T>, errorMessage: string): Promise<T | null> => {
+    try {
+      return await operation();
+    } catch (err) {
+      setError(handleApiError(err, errorMessage));
+      return null;
     }
-  };
+  }, []);
 
-  const handleUndo = (itemId: string) => {
-    setCompletedItems((prev) => ({ ...prev, [itemId]: false }));
-    setUndoItems((prev) => ({ ...prev, [itemId]: false }));
-    setCountdownTimers((prev) => ({ ...prev, [itemId]: 0 }));
-  };
+  const fetchActionItems = useCallback(
+    async (params: UseActionItemsParams = {}) => {
+      setLoading(true);
+      setError(null);
 
-  // Countdown effect
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdownTimers((prev) => {
-        const newTimers = { ...prev };
-        let hasActiveTimers = false;
+      const result = await withErrorHandling(async () => {
+        const mergedParams = { ...currentParamsRef.current, ...params };
+        currentParamsRef.current = mergedParams;
+        return await actionItemService.getActionItems(mergedParams);
+      }, 'fetch action items');
 
-        Object.keys(newTimers).forEach((itemId) => {
-          if (newTimers[itemId] > 0) {
-            newTimers[itemId] -= 1;
-            hasActiveTimers = true;
-          }
+      if (result) {
+        setActionItems(sortActionItems(result.actionItems));
+        setTotal(result.total);
+        setPage(result.page);
+        setTotalPages(result.totalPages);
+      }
+
+      setLoading(false);
+    },
+    [withErrorHandling]
+  );
+
+  const createActionItem = useCallback(
+    async (data: CreateActionItemData): Promise<ActionItem | null> => {
+      const result = await withErrorHandling(() => actionItemService.createActionItem(data), 'create action item');
+
+      if (result) {
+        updateActionItemsWithSorting((prev) => [result, ...prev]);
+        setTotal((prev) => prev + 1);
+      }
+
+      return result;
+    },
+    [withErrorHandling, updateActionItemsWithSorting]
+  );
+
+  const updateActionItem = useCallback(
+    async (actionItemId: string, data: UpdateActionItemData): Promise<ActionItem | null> => {
+      const result = await withErrorHandling(() => actionItemService.updateActionItem(actionItemId, data), 'update action item');
+
+      if (result) {
+        updateActionItemsWithSorting((prev) => {
+          const updated = prev.map((item) => {
+            if (item.id === actionItemId) {
+              return { ...item, ...result };
+            }
+            return item;
+          });
+          return updated;
         });
+      }
 
-        // Clear interval if no active timers
-        if (!hasActiveTimers) {
-          clearInterval(interval);
-        }
+      return result;
+    },
+    [withErrorHandling, updateActionItemsWithSorting]
+  );
 
-        return newTimers;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [countdownTimers]);
+  const refreshActionItems = useCallback(async () => {
+    await fetchActionItems(currentParamsRef.current);
+  }, [fetchActionItems]);
 
   return {
     actionItems,
-    completedItems,
-    undoItems,
-    countdownTimers,
-    handleActionItemToggle,
-    handleUndo,
+    loading,
+    error,
+    total,
+    page,
+    totalPages,
+    fetchActionItems,
+    createActionItem,
+    updateActionItem,
+    refreshActionItems,
   };
 };
